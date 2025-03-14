@@ -9,7 +9,7 @@ def test_post_v1_account():
     account_api = AccountApi(host='http://5.63.153.31:5051')
     login_api = LoginApi(host='http://5.63.153.31:5051')
     mailhog_api = MailhogApi(host='http://5.63.153.31:5025')
-    login = 'd.gaponenko_test26'
+    login = 'd.gaponenko_test28'
     email = f'{login}@mail.ru'
     password = '123456789'
     json_data = {
@@ -58,8 +58,12 @@ def get_activation_token_by_login(
         ):
     token = None
     for i in response.json()['items']:
-        user_data = json.loads(i['Content']['Body'])
-        user_login = user_data['Login']
-        if user_login == login:
-            token = user_data['ConfirmationLinkUrl'].split('/')[-1]
+        try:
+            user_data = json.loads(i['Content']['Body'])
+            user_login = user_data['Login']
+            if user_login == login:
+                token = user_data['ConfirmationLinkUrl'].split('/')[-1]
+        except (json.JSONDecodeError, KeyError):
+            continue
+
     return token

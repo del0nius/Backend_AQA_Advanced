@@ -8,7 +8,7 @@ def test_put_v1_account_email():
     account_api = AccountApi(host='http://5.63.153.31:5051')
     login_api = LoginApi(host='http://5.63.153.31:5051')
     mailhog_api = MailhogApi(host='http://5.63.153.31:5025')
-    login = 'd.gaponenko_test29'
+    login = 'd.gaponenko_test31'
     email = f'{login}@mail.ru'
     new_email = f'd{login}@mail.ru'
     password = '123456789'
@@ -111,10 +111,14 @@ def get_activation_token_by_login(
         ):
     token = None
     for i in response.json()['items']:
-        user_data = json.loads(i['Content']['Body'])
-        user_login = user_data['Login']
-        if user_login == login:
-            token = user_data['ConfirmationLinkUrl'].split('/')[-1]
+        try:
+            user_data = json.loads(i['Content']['Body'])
+            user_login = user_data['Login']
+            if user_login == login:
+                token = user_data['ConfirmationLinkUrl'].split('/')[-1]
+        except (json.JSONDecodeError, KeyError):
+            continue
+
     return token
 
 def get_activation_token_by_new_email(
@@ -123,9 +127,11 @@ def get_activation_token_by_new_email(
         ):
     new_token = None
     for i in response.json()['items']:
-        user_data = json.loads(i['Content']['Body'])
-        user_email = i['Content']['Headers']['To'][0]
-        if user_email == new_email:
-            new_token = user_data['ConfirmationLinkUrl'].split('/')[-1]
-    print(new_token)
+        try:
+            user_data = json.loads(i['Content']['Body'])
+            user_email = i['Content']['Headers']['To'][0]
+            if user_email == new_email:
+                new_token = user_data['ConfirmationLinkUrl'].split('/')[-1]
+        except (json.JSONDecodeError, KeyError):
+            continue
     return new_token
