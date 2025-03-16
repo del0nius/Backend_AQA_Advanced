@@ -24,7 +24,7 @@ def test_put_v1_account_email():
     login_api = LoginApi(configuration=dm_api_configuration)
     mailhog_api = MailhogApi(configuration=mailhog_configuration)
 
-    login = 'd.gaponenko_test35'
+    login = 'd.gaponenko_test39'
     email = f'{login}@mail.ru'
     new_email = f'd{login}@mail.ru'
     password = '123456789'

@@ -25,7 +25,7 @@ def test_post_v1_account():
     login_api = LoginApi(configuration=dm_api_configuration)
     mailhog_api = MailhogApi(configuration=mailhog_configuration)
 
-    login = 'd.gaponenko_test32'
+    login = 'd.gaponenko_test36'
     email = f'{login}@mail.ru'
     password = '123456789'
     json_data = {
