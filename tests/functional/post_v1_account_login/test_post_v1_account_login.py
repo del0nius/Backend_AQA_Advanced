@@ -1,4 +1,5 @@
 import json
+import time
 from dm_api_account.apis.account_api import AccountApi
 from dm_api_account.apis.login_api import LoginApi
 from api_mailhog.apis.mailhog_api import MailhogApi
@@ -25,7 +26,7 @@ def test_post_v1_account_login():
     login_api = LoginApi(configuration=dm_api_configuration)
     mailhog_api = MailhogApi(configuration=mailhog_configuration)
 
-    login = 'd.gaponenko_test38'
+    login = 'd.gaponenko_test46'
     email = f'{login}@mail.ru'
     password = '123456789'
     json_data = {
@@ -39,7 +40,8 @@ def test_post_v1_account_login():
     print(response.text)
     assert response.status_code == 201, f"Couldn't create user {response.json()}"
 
-    # Get email from email server
+    # Get email from email server, wait 3 seconds before execution to ensure that email is received
+    time.sleep(3)
     response = mailhog_api.get_api_v2_messages()
     print(response.status_code)
     print(response.text)
