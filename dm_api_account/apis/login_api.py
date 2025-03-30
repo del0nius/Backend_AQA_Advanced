@@ -7,7 +7,8 @@ class LoginApi(RestClient):
 
     def post_v1_account_login(
             self,
-            json_data
+            json_data,
+            **kwargs
     ):
         """
         Authenticate via credentials
@@ -16,6 +17,7 @@ class LoginApi(RestClient):
         """
         response = self.post(
             path=f'/v1/account/login',
-            json=json_data
+            json=json_data,
+            **kwargs
         )
         return response

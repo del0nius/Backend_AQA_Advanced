@@ -7,7 +7,8 @@ class AccountApi(RestClient):
 
     def post_v1_account(
             self,
-            json_data
+            json_data,
+            **kwargs
     ):
         """
         Register new user
@@ -16,7 +17,8 @@ class AccountApi(RestClient):
         """
         response = self.post(
             path=f'/v1/account',
-            json=json_data
+            json=json_data,
+            **kwargs
         )
         return response
 
