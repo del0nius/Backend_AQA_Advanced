@@ -1,12 +1,9 @@
-import json
-
 from helpers.account_helper import AccountHelper
 from restclient.configuration import Configuration as MailhogConfiguration
 from restclient.configuration import Configuration as DmApiConfiguration
 from services.dm_api_account import DMApiAccount
 from services.api_mailhog import MailHogApi
 import structlog
-import time
 
 structlog.configure(
     processors=[
@@ -28,7 +25,7 @@ def test_post_v1_account():
 
     account_helper = AccountHelper(dm_account_api=account, mailhog=mailhog)
 
-    login = 'd.gaponenko_test53'
+    login = 'd.gaponenko_test55'
     email = f'{login}@mail.ru'
     password = '123456789'
     account_helper.register_new_user(login=login, password=password, email=email)
