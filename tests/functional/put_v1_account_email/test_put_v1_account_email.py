@@ -1,14 +1,32 @@
 import json
+import time
+
 from dm_api_account.apis.account_api import AccountApi
 from dm_api_account.apis.login_api import LoginApi
 from api_mailhog.apis.mailhog_api import MailhogApi
+from restclient.configuration import Configuration as MailhogConfiguration
+from restclient.configuration import Configuration as DmApiConfiguration
+import structlog
 
+structlog.configure(
+    processors=[
+        structlog.processors.JSONRenderer(
+            indent=4,
+            ensure_ascii=True,
+            # sort_keys=True
+        )
+    ]
+)
 
 def test_put_v1_account_email():
-    account_api = AccountApi(host='http://5.63.153.31:5051')
-    login_api = LoginApi(host='http://5.63.153.31:5051')
-    mailhog_api = MailhogApi(host='http://5.63.153.31:5025')
-    login = 'd.gaponenko_test31'
+    mailhog_configuration = MailhogConfiguration(host='http://5.63.153.31:5025')
+    dm_api_configuration = DmApiConfiguration(host='http://5.63.153.31:5051', disable_log=False)
+
+    account_api = AccountApi(configuration=dm_api_configuration)
+    login_api = LoginApi(configuration=dm_api_configuration)
+    mailhog_api = MailhogApi(configuration=mailhog_configuration)
+
+    login = 'd.gaponenko_test50'
     email = f'{login}@mail.ru'
     new_email = f'd{login}@mail.ru'
     password = '123456789'
@@ -24,7 +42,8 @@ def test_put_v1_account_email():
     print(response.text)
     assert response.status_code == 201, f"Couldn't create user {response.json()}"
 
-    # Get email from email server
+    # Get email from email server, wait 3 seconds before execution to ensure that email is received
+    time.sleep(3)
     response = mailhog_api.get_api_v2_messages()
     print(response.status_code)
     print(response.text)
@@ -76,7 +95,8 @@ def test_put_v1_account_email():
     print(response.text)
     assert response.status_code == 403, f"Didn't get code 403"
 
-    # Get new email from email server (after changing users email)
+    # Get new email from email server (after changing users email), wait 3 seconds before execution to ensure that email is received
+    time.sleep(3)
     response = mailhog_api.get_api_v2_messages()
     print(response.status_code)
     print(response.text)
