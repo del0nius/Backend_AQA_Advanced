@@ -17,7 +17,7 @@ structlog.configure(
 
 def test_post_v1_account():
     # User registration
-    mailhog_configuration = MailhogConfiguration(host='http://5.63.153.31:5025')
+    mailhog_configuration = MailhogConfiguration(host='http://5.63.153.31:5025', disable_log=False)
     dm_api_configuration = DmApiConfiguration(host='http://5.63.153.31:5051', disable_log=False)
 
     account = DMApiAccount(configuration=dm_api_configuration)
@@ -25,7 +25,7 @@ def test_post_v1_account():
 
     account_helper = AccountHelper(dm_account_api=account, mailhog=mailhog)
 
-    login = 'd.gaponenko_test55'
+    login = 'd.gaponenko_test66'
     email = f'{login}@mail.ru'
     password = '123456789'
     account_helper.register_new_user(login=login, password=password, email=email)
