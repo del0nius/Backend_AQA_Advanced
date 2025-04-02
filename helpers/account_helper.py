@@ -83,6 +83,7 @@ class AccountHelper:
             self,
             new_email: str
     ):
+
         # Get emails from the mail server
         response = self.mailhog.mailhog_api.get_api_v2_messages()
         assert response.status_code == 200, f"Couldn't get emails {response.json()}"
