@@ -1,7 +1,30 @@
 import json
+import time
 
 from services.dm_api_account import DMApiAccount
 from services.api_mailhog import MailHogApi
+
+
+def retryer(
+        func
+):
+    def wrapper(
+            *args,
+            **kwargs
+    ):
+        token = None
+        count = 0
+        while token is None:
+            print(f"Attempt №{count} to obtain an activation token")
+            token = func(*args, **kwargs)
+            count += 1
+            if count == 5:
+                raise AssertionError("Exceeded number of attempts to obtain an activation token")
+            if token:
+                return token
+            time.sleep(1)
+
+    return wrapper
 
 
 class AccountHelper:
@@ -27,9 +50,7 @@ class AccountHelper:
 
         response = self.dm_account_api.account_api.post_v1_account(json_data=json_data)
         assert response.status_code == 201, f"Couldn't create user {response.json()}"
-        response = self.mailhog.mailhog_api.get_api_v2_messages()
-        assert response.status_code == 200, f"Couldn't get emails {response.json()}"
-        token = self.get_activation_token_by_login(login=login, response=response)
+        token = self.get_activation_token_by_login(login=login)
         assert token is not None, f"Couldn't get token for user {login}"
         response = self.dm_account_api.account_api.put_v1_account_token(token=token)
         assert response.status_code == 200, f"Couldn't activate user {login}"
@@ -39,6 +60,7 @@ class AccountHelper:
             self,
             login: str,
             password: str,
+            expected_status_code: int = 200,
             remember_me: bool = True
     ):
         json_data = {
@@ -48,15 +70,30 @@ class AccountHelper:
         }
 
         response = self.dm_account_api.login_api.post_v1_account_login(json_data=json_data)
-        assert response.status_code == 200, f"Couldn't sign in user {login}"
+        assert response.status_code == expected_status_code, f"Expected {expected_status_code}, but got {response.status_code} for user {login}"
         return response
 
-    @staticmethod
+    def find_activation_token_from_mail(
+            self,
+            new_email: str
+    ):
+        # Get emails from the mail server
+        response = self.mailhog.mailhog_api.get_api_v2_messages()
+        assert response.status_code == 200, f"Couldn't get emails {response.json()}"
+
+        # Find the activation token from the response
+        activation_token = self.get_activation_token_by_new_email(new_email, response)
+        assert activation_token is not None, f"Couldn't get token for email {new_email}"
+
+        return activation_token
+
+    @retryer
     def get_activation_token_by_login(
+            self,
             login,
-            response
     ):
         token = None
+        response = self.mailhog.mailhog_api.get_api_v2_messages()
         for i in response.json()['items']:
             try:
                 user_data = json.loads(i['Content']['Body'])
@@ -66,3 +103,19 @@ class AccountHelper:
             except (json.JSONDecodeError, KeyError):
                 continue
         return token
+
+    @staticmethod
+    def get_activation_token_by_new_email(
+            new_email,
+            response
+    ):
+        new_token = None
+        for i in response.json()['items']:
+            try:
+                user_data = json.loads(i['Content']['Body'])
+                user_email = i['Content']['Headers']['To'][0]
+                if user_email == new_email:
+                    new_token = user_data['ConfirmationLinkUrl'].split('/')[-1]
+            except (json.JSONDecodeError, KeyError):
+                continue
+        return new_token
