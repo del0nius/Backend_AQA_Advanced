@@ -33,7 +33,7 @@ def test_put_v1_account_email():
     login_api = LoginApi(configuration=dm_api_configuration)
     mailhog_api = MailhogApi(configuration=mailhog_configuration)
 
-    login = 'd.gaponenko_test69'
+    login = 'd.gaponenko_test77'
     email = f'{login}@mail.ru'
     new_email = f'd{login}@mail.ru'
     password = '123456789'
@@ -54,7 +54,6 @@ def test_put_v1_account_email():
     account_helper.user_login(login=login, password=password, expected_status_code=403)
 
     # Get new email from email server (after changing users email), wait 3 seconds before execution to ensure that email is received
-    time.sleep(3)
     # Find the activation token from MailHog
     new_token = account_helper.find_activation_token_from_mail(new_email)
 
