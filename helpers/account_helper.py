@@ -5,9 +5,13 @@ from services.dm_api_account import DMApiAccount
 from services.api_mailhog import MailHogApi
 from retrying import retry
 
-def retry_if_result_none(result):
+
+def retry_if_result_none(
+        result
+        ):
     """Return True if we should retry (in this case when result is None), False otherwise"""
     return result is None
+
 
 def retryer(
         func
@@ -39,6 +43,20 @@ class AccountHelper:
     ):
         self.dm_account_api = dm_account_api
         self.mailhog = mailhog
+
+    def auth_client(
+            self,
+            login: str,
+            password: str
+    ):
+        response = self.dm_account_api.login_api.post_v1_account_login(
+            json_data={"login": login, "password": password}
+        )
+        token = {
+            "x-dm-auth-token": response.headers["x-dm-auth-token"]
+        }
+        self.dm_account_api.account_api.set_headers(token)
+        self.dm_account_api.login_api.set_headers(token)
 
     def register_new_user(
             self,
@@ -77,7 +95,7 @@ class AccountHelper:
         assert response.status_code == expected_status_code, f"Expected {expected_status_code}, but got {response.status_code} for user {login}"
         return response
 
-    #option with retrying lib
+    # option with retrying lib
     @retry(stop_max_attempt_number=5, retry_on_result=retry_if_result_none, wait_fixed=1000)
     def find_activation_token_from_mail(
             self,
@@ -94,7 +112,7 @@ class AccountHelper:
 
         return activation_token
 
-    #option with self-created decorator
+    # option with self-created decorator
     @retryer
     def get_activation_token_by_login(
             self,
